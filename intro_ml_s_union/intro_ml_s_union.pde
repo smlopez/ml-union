@@ -23,7 +23,6 @@ int columns, rows;   // Number of columns and rows in our system
 long frame=0; // Current frame to show
 int numFrames = 0;
 int x_w=0, y_w=0;
-int count=0;
 boolean game=false;
 Timer timer;
 void setup() {
@@ -54,24 +53,23 @@ boolean sketchFullScreen() {
 
 void draw() {
   background(0); 
-  count=millis(); 
   if (!game) {
     intro();
-  } else {
-    image(bg, 0, 0, displayWidth, displayHeight);
-    image(stop, xpos, ypos);
-    if (keyPressed&&keyCode==39) {
-      background(0); 
-      image(bg, 0, 0, displayWidth, displayHeight);
-      animation1.display((xpos+=10), ypos);
-    } else {
-      image(stop, xpos, ypos);
-    } 
-    if (keyPressed&&keyCode==37) {
-      background(0); 
-      image(bg, 0, 0, displayWidth, displayHeight);
-      animation1.display((xpos-=10), ypos);
-    }
+//  } else {
+//    image(bg, 0, 0, displayWidth, displayHeight);
+//    image(stop, xpos, ypos);
+//    if (keyPressed&&keyCode==39) {
+//      background(0); 
+//      image(bg, 0, 0, displayWidth, displayHeight);
+//      animation1.display((xpos+=10), ypos);
+//    } else {
+//      image(stop, xpos, ypos);
+//    } 
+//    if (keyPressed&&keyCode==37) {
+//      background(0); 
+//      image(bg, 0, 0, displayWidth, displayHeight);
+//      animation1.display((xpos-=10), ypos);
+//    }
   }
 }
 void intro() {
@@ -103,6 +101,12 @@ void intro() {
         popMatrix();
       }
     }
-  }else game=true;
+    if (frame<0) {      
+      fill(#ffffff);
+      textAlign(CENTER);
+      textSize(24);
+      text("PRESENTA", width/2, (height/2)+255);
+    }
+  } else game=true;
 }
 
