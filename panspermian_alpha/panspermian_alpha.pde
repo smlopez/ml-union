@@ -7,6 +7,7 @@ PImage bg; //-MAPA- Imagén de fondo
 int state=0; //-INTERNO- Posición del switch para cada estados
 int redim=0;
 int text_tam=0;
+boolean resChg=false;
 //-INTRO----------------------------------------------------------
 import ddf.minim.*;
 PImage img;       // The source image
@@ -225,6 +226,7 @@ void menu_ini() {
       if (mousePressed) {     
         menu_sel.trigger();
         menu_index=menu_ini_index+1;
+        menu_ini_index=0;
       }
     }
   }
@@ -472,6 +474,7 @@ void menu_opc() {
       scr_sz_x=res[resPos][0];
       scr_sz_y=res[resPos][1];
       cargarConfig.guardarConf(0, str(resPos));
+      resChg=true;
       break;
     case 1:
       if (scr_fullscr) {
@@ -514,6 +517,11 @@ void menu_opc() {
       break;
     case 7:
       menu_index=0;
+      menu_opc_index=0;
+      if (resChg) {
+        open("panspermian_alpha.exe");
+        exit();
+      }
       break;
     }
   }
@@ -529,6 +537,7 @@ void menu_opc() {
           scr_sz_x=res[resPos][0];
           scr_sz_y=res[resPos][1];
           cargarConfig.guardarConf(0, str(resPos));
+          resChg=true;
           break;
         case 1:
           if (scr_fullscr) {
@@ -572,6 +581,10 @@ void menu_opc() {
         case 7:
           menu_index=0;
           menu_opc_index=0;
+          if (resChg) {
+            open("panspermian_alpha.exe");
+            exit();
+          }
           break;
         }
       }
