@@ -5,8 +5,8 @@ class confLoader {
   int scr_frameRate=0;  //-CONFIG- Frame por segundo
   boolean scr_fullscr = true; //-CONFIG- Pantalla completa
   boolean intro_state=true; //-CONFIG- Mostrar Intro
-  boolean aud_music_state=true; //-CONFIG- Activar música
-  float aud_music_volume=0; //-CONFIG- Valor del volumen
+  boolean aud_music_state=true, aud_gui_state=true; //-CONFIG- Activar música y efectos
+  float aud_music_volume=0, aud_gui_volume=0; //-CONFIG- Valor del volumen
   int resCount=0;
   int [][] res;
   XML xml;
@@ -17,12 +17,14 @@ class confLoader {
     xml = loadXML("config.conf");
     XML[] configs = xml.getChildren("param");
     scr_sz=configs[0].getInt("value");
- //   scr_sz_y=configs[1].getInt("value");
+    //   scr_sz_y=configs[1].getInt("value");
     scr_fullscr=boolean(configs[2].getString("value"));
     scr_frameRate=configs[3].getInt("value");
     intro_state=boolean(configs[4].getString("value"));
     aud_music_state=boolean(configs[5].getString("value"));
     aud_music_volume=configs[6].getFloat("value");
+    aud_gui_state=boolean(configs[7].getString("value"));
+    aud_gui_volume=configs[8].getFloat("value");
     //  println(configs[0].getInt("value"));
     //  println(configs[1].getInt("value"));
     //  println(boolean(configs[2].getContent("value")));
@@ -46,4 +48,3 @@ class confLoader {
     }
   }
 }
-

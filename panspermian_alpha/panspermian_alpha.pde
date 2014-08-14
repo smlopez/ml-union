@@ -2,7 +2,7 @@ int scr_sz_x=1920, scr_sz_y=1080; //-CONFIG- Tamaño de la pantalla en las coord
 int scr_frameRate=30; //-CONFIG- Frame por segundo
 boolean scr_fullscr; //-CONFIG- Pantalla completa
 boolean aud_music_state=true, aud_gui_state=true; //-CONFIG- Activar música
-float aud_music_volume=0; //-CONFIG- Valor del volumen
+float aud_music_volume=0, aud_gui_volume=0; //-CONFIG- Valor del volumen
 PImage bg; //-MAPA- Imagén de fondo
 int state=0; //-INTERNO- Posición del switch para cada estados
 int redim=0;
@@ -17,9 +17,8 @@ long frame=0; // Current frame to show
 int numFrames = 0;
 int x_w=0, y_w=0;
 Timer timer;
-Minim minim;
+Minim minim, minim_smpls;
 AudioPlayer player;
-AudioOutput out;
 boolean intro_state=true; //-CONFIG- Mostrar Intro
 //-INTRO----------------------------------------------------------
 //-MENU-----------------------------------------------------------
@@ -57,7 +56,7 @@ int resPos=0;
 confLoader cargarConfig;
 void setup() {
   size(scr_sz_x, scr_sz_y, P3D);
-  frameRate(9);
+  frameRate(scr_frameRate);
   bg = loadImage("bg.png");
   //-INTRO--------------------------------------------------------
   if (intro_state) { 
@@ -72,7 +71,8 @@ void setup() {
     timer=new Timer(10000);
     timer.start();
   }
-  minim = new Minim(this); //Initiallice Minim
+  minim = new Minim(this); //Initiallice Minim music
+  minim_smpls = new Minim(this); //Initiallice Minim samples
   player = minim.loadFile("mainTheme.mp3"); //Load the file and set at the player
 
 
@@ -81,13 +81,21 @@ void setup() {
   if (!aud_music_state) player.mute();   
   //-INTRO---------------------------------------------------------
   //-MENU----------------------------------------------------------
-  menu_nav = minim.loadSample("menu_nav.wav", 512);
-  menu_sel = minim.loadSample("menu_sel.wav", 512);
-  menu_back = minim.loadSample("menu_nav.wav", 512);
+  menu_nav = minim_smpls.loadSample("menu_nav.wav", 512);
+  menu_sel = minim_smpls.loadSample("menu_sel.wav", 512);
+  menu_back = minim_smpls.loadSample("menu_back.wav", 512);
+  menu_nav.setGain(aud_gui_volume);
+  menu_sel.setGain(aud_gui_volume);
+  menu_back.setGain(aud_gui_volume);
+  if (!aud_gui_state) {
+    menu_nav.mute();
+    menu_sel.mute();
+    menu_back.mute();
+  }
   logo_menu = loadImage("logo_menu.png");
   redim=1920/width;
   text_tam=3*(redim+10);
-  hs1 = new HScrollbar(width/3+300, height*2/5+((height/5)*7/4)-15, 300, 20, 1, ((sqrt(aud_music_volume*aud_music_volume))/100*280));
+  hs1 = new HScrollbar(width/3+300, height*2/5+((height/5)*7/4)-15, 300, 20, 1, aud_music_volume);
   //-MENU----------------------------------------------------------
 }
 boolean sketchFullScreen() {
@@ -106,6 +114,12 @@ void draw() {
     }
     break;
   case 1:
+    frameRate(9);
+    translate(0, 0, 0);
+    rectMode(CORNER); 
+    stroke(RGB);
+    hint(ENABLE_STROKE_PURE);
+    smooth();
     menu();
     break;
   case 2:
@@ -129,6 +143,8 @@ void cargarConf() {
   intro_state=cargarConfig.intro_state;
   aud_music_state=cargarConfig.aud_music_state;
   aud_music_volume=cargarConfig.aud_music_volume;
+  aud_gui_state=cargarConfig.aud_gui_state;
+  aud_gui_volume=cargarConfig.aud_gui_volume;
 }
 void intro() {
   if (frame>10)            frame = (frame-12) % numFrames;
@@ -183,7 +199,7 @@ void menu() {
     break;
   }
   if (keyPressed&&key==8) {
-    menu_sel.trigger();
+    menu_back.trigger();
     menu_index=0;
   }
 }
@@ -279,7 +295,7 @@ void menu_jugar() {
       if (menu_jugar_index!=i)menu_nav.trigger();
       menu_jugar_index=i;
       if (mousePressed) {     
-        menu_sel.trigger();
+        if (menu_jugar_index!=2)menu_sel.trigger();
         switch (menu_jugar_index) {
         case 0:
           state=2;
@@ -288,6 +304,7 @@ void menu_jugar() {
         case 1:
           break;
         case 2:
+          menu_back.trigger();
           menu_index=0;
           menu_jugar_index=0;
           break;
@@ -296,7 +313,7 @@ void menu_jugar() {
     }
   }
   if (keyPressed&&key=='\n') {
-    menu_sel.trigger();
+    if (menu_jugar_index!=2)menu_sel.trigger();
     switch (menu_jugar_index) {
     case 0:
       state=2;
@@ -305,6 +322,7 @@ void menu_jugar() {
     case 1:
       break;
     case 2:
+      menu_back.trigger();
       menu_index=0;
       menu_jugar_index=0;
 
@@ -456,7 +474,6 @@ void menu_opc() {
   } else {
     opc6_value="No";
   }
-
   opc7_value=str(int(hs1.getPos()));
   opc8_value="";
   opc1="Resolución   "+opc1_value;
@@ -512,8 +529,23 @@ void menu_opc() {
       cargarConfig.guardarConf(5, str(aud_music_state));
       break;
     case 5:
+      if (!aud_gui_state) {
+        opc6_value="Si";
+        aud_gui_state=true;
+        menu_nav.unmute();
+        menu_sel.unmute();
+        menu_back.unmute();
+      } else {
+        opc6_value="No";
+        aud_gui_state=false;
+        menu_nav.mute();
+        menu_sel.mute();
+        menu_back.mute();
+      }
+      cargarConfig.guardarConf(7, str(aud_gui_state));
       break;
     case 6:
+
       break;
     case 7:
       menu_index=0;
@@ -525,10 +557,10 @@ void menu_opc() {
       break;
     }
   }
-  for (int i=1; i<8; i++) {
+  for (int i=1; i<7; i++) {
     if ((mouseX > (width/3) )&&( mouseX < (width/3+400*redim) )&&( mouseY > ((height*2/5+((height/5)*i/items))-40))&&( mouseY < ((height*2/5+((height/5)*i/items))))) {
       if (menu_opc_index!=i-1)menu_nav.trigger();
-      menu_opc_index=(i-1)%7;
+      menu_opc_index=(i-1)%6;
       if (mousePressed) {
         menu_sel.trigger();
         switch (menu_opc_index) {
@@ -575,16 +607,26 @@ void menu_opc() {
           cargarConfig.guardarConf(5, str(aud_music_state));
           break;
         case 5:
+          if (!aud_gui_state) {
+            aud_gui_state=true;
+            opc6_value="Si";
+            menu_nav.unmute();
+            menu_sel.unmute();
+            menu_back.unmute();
+          } else {
+            aud_gui_state=false;
+            opc6_value="No";
+            menu_nav.mute();
+            menu_sel.mute();
+            menu_back.mute();
+          }
+          cargarConfig.guardarConf(7, str(aud_gui_state));
           break;
         case 6:
+
           break;
         case 7:
-          menu_index=0;
-          menu_opc_index=0;
-          if (resChg) {
-            open("panspermian_alpha.exe");
-            exit();
-          }
+
           break;
         }
       }
@@ -594,9 +636,13 @@ void menu_opc() {
     if (menu_opc_index!=7)menu_nav.trigger();
     menu_opc_index=7;
     if (mousePressed) {     
-      menu_sel.trigger();
+      menu_back.trigger();
       menu_index=0;
       menu_opc_index=0;
+      if (resChg) {
+        open("panspermian_alpha.exe");
+        exit();
+      }
     }
   }  
 
@@ -621,4 +667,3 @@ void menu_opc() {
     if (menu_opc_index==0)resPos=(resPos+1)%resCount;
   }
 }
-

@@ -8,18 +8,19 @@ class HScrollbar {
   boolean locked;
   float ratio;
 
-  HScrollbar (float xp, float yp, int sw, int sh, int l, float extPos) {
+  HScrollbar (float xp, float yp, int sw, int sh, int l, float vol) {
     swidth = sw;
     sheight = sh;
     int widthtoheight = sw - sh;
     ratio = (float)sw / (float)widthtoheight;
     xpos = xp;
     ypos = yp-sheight/2;
+    spos = xpos+ 280*(1+(vol-15)/75)+3;
     sposMin = xpos;
-    spos = extPos+sposMin;
     newspos = spos;
     sposMax = xpos + swidth - sheight;
     loose = l;
+    //      println(xpos+" "+swidth+" "+sheight+" "+spos+" "+sposMax+" "+vol);
   }
 
   void update() {
@@ -71,7 +72,8 @@ class HScrollbar {
     // Convert spos to be values between
     // 0 and the total width of the scrollbar
     //return spos * ratio;
-    //    println(spos+" "+sposMax+" "+(spos%sposMin));
+    // println(sposMin+" "+sposMax+" "+(spos%sposMin));
+    // println(spos);
     return int(spos%sposMin)*100/280;
   }
 }
