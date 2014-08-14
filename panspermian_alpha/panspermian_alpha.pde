@@ -8,6 +8,7 @@ int state=0; //-INTERNO- Posición del switch para cada estados
 int redim=0;
 int text_tam=0;
 boolean resChg=false;
+confLoader cargarConfig;
 //-INTRO----------------------------------------------------------
 import ddf.minim.*;
 PImage img;       // The source image
@@ -53,7 +54,9 @@ int resCount=0;
 int resPos=0;
 ////-----OPCIONES-------------------------------------------------
 //-MENU-----------------------------------------------------------
-confLoader cargarConfig;
+//-JUEGO----------------------------------------------------------
+interfaz interfaz;
+//-JUEGO----------------------------------------------------------
 void setup() {
   size(scr_sz_x, scr_sz_y, P3D);
   frameRate(scr_frameRate);
@@ -97,6 +100,9 @@ void setup() {
   text_tam=3*(redim+10);
   hs1 = new HScrollbar(width/3+300, height*2/5+((height/5)*7/4)-15, 300, 20, 1, aud_music_volume);
   //-MENU----------------------------------------------------------
+  //-JUEGO---------------------------------------------------------
+      interfaz=new interfaz();
+  //-JUEGO---------------------------------------------------------
 }
 boolean sketchFullScreen() {
   cargarConfig=new confLoader();
@@ -124,6 +130,7 @@ void draw() {
     break;
   case 2:
     image(bg, 0, 0);
+  interfaz.draw();
     break;
   }
 }
