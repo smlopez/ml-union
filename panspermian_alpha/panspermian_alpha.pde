@@ -52,9 +52,12 @@ String opc8_value="";
 int [][] res;
 int resCount=0;
 int resPos=0;
+int fov=100;
 ////-----OPCIONES-------------------------------------------------
 //-MENU-----------------------------------------------------------
 //-JUEGO----------------------------------------------------------
+import saito.objloader.*;
+OBJModel model;
 interfaz interfaz;
 //-JUEGO----------------------------------------------------------
 void setup() {
@@ -101,7 +104,8 @@ void setup() {
   hs1 = new HScrollbar(width/3+300, height*2/5+((height/5)*7/4)-15, 300, 20, 1, aud_music_volume);
   //-MENU----------------------------------------------------------
   //-JUEGO---------------------------------------------------------
-      interfaz=new interfaz();
+  model = new OBJModel(this, "0.obj", TRIANGLE_STRIP);
+  interfaz=new interfaz();
   //-JUEGO---------------------------------------------------------
 }
 boolean sketchFullScreen() {
@@ -129,8 +133,16 @@ void draw() {
     menu();
     break;
   case 2:
-    image(bg, 0, 0,width,height);
-  interfaz.draw();
+    camera(width/2, height/2, (height/2.0) / tan(PI*30.0 / 180.0)*fov/100, width/2, height/2, 0, 0, 1, 0);
+    image(bg, 0, 0, width, height);
+    interfaz.draw();
+    noStroke();
+    lights();
+    pushMatrix();
+    translate((width-mouseX), height+50, 0);
+    scale(3);
+    model.draw();
+    popMatrix();   
     break;
   }
 }
@@ -674,3 +686,4 @@ void menu_opc() {
     if (menu_opc_index==0)resPos=(resPos+1)%resCount;
   }
 }
+
