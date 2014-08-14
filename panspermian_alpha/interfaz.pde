@@ -23,12 +23,12 @@ class interfaz {
     image(contenedor_var1, 205, 45, 300, 20); // Barra de var1 - Contenedor
     text(var1_value+"%", 362.2-(textWidth(var1_value+"%")/2), 61); // Barra de var1 - Porcentaje
     image(box, width-200, 0);
-    text("MAPA", (width-200)+(200-textWidth("MAPA"))/2, 100);
+    text("MAPA", (width-200)+textWidth("MAPA")/2+(200-textWidth("MAPA"))/2, 100);
     textSize(24);
     textLeading(20);
-    text(quest_title, width-210, 230, 0);
+    text(quest_title, (width-220)+textWidth(quest_title)/2, 230, 0);
     textSize(13);
-    text(quest, width-200, 260);
+    text(quest, (width-200)+textWidth(quest)/2, 260);
   }
 }
 
