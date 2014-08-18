@@ -1,1 +1,0 @@
-panspermian_alpha_rescalable.exe

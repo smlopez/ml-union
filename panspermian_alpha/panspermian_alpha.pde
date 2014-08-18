@@ -52,18 +52,23 @@ String opc8_value="";
 int [][] res;
 int resCount=0;
 int resPos=0;
-int fov=100;
+int juego_fov=90;
+int juego_vsync=1;
 ////-----OPCIONES-------------------------------------------------
 //-MENU-----------------------------------------------------------
 //-JUEGO----------------------------------------------------------
+import javax.media.opengl.GL2;
 import saito.objloader.*;
 OBJModel model;
+PGraphics gui;
 interfaz interfaz;
+int juego_menu=0;
+int juego_ctrl=0;
+GL2 gl;
 //-JUEGO----------------------------------------------------------
 void setup() {
-  size(scr_sz_x, scr_sz_y, P3D);
+  size(scr_sz_x, scr_sz_y, OPENGL);
   frameRate(scr_frameRate);
-  bg = loadImage("bg.png");
   //-INTRO--------------------------------------------------------
   if (intro_state) { 
     img = loadImage("2.png");
@@ -101,11 +106,14 @@ void setup() {
   logo_menu = loadImage("logo_menu.png");
   redim=1920/width;
   text_tam=3*(redim+10);
-  hs1 = new HScrollbar(width/3+300, height*2/5+((height/5)*7/4)-15, 300, 20, 1, aud_music_volume);
+  hs1 = new HScrollbar(width/3+300, height/5+((height/5)*7/3)-15, 300, 20, 1, aud_music_volume);
   //-MENU----------------------------------------------------------
   //-JUEGO---------------------------------------------------------
+  bg = loadImage("bg.png");
   model = new OBJModel(this, "0.obj", TRIANGLE_STRIP);
+  gui = createGraphics(width, height, P3D);
   interfaz=new interfaz();
+  gl = ((PJOGL)beginPGL()).gl.getGL2();
   //-JUEGO---------------------------------------------------------
 }
 boolean sketchFullScreen() {
@@ -133,16 +141,7 @@ void draw() {
     menu();
     break;
   case 2:
-    camera(width/2, height/2, (height/2.0) / tan(PI*30.0 / 180.0)*fov/100, width/2, height/2, 0, 0, 1, 0);
-    image(bg, 0, 0, width, height);
-    interfaz.draw();
-    noStroke();
-    lights();
-    pushMatrix();
-    translate((width-mouseX), height+50, 0);
-    scale(3);
-    model.draw();
-    popMatrix();   
+    juego_control();
     break;
   }
 }
@@ -164,6 +163,8 @@ void cargarConf() {
   aud_music_volume=cargarConfig.aud_music_volume;
   aud_gui_state=cargarConfig.aud_gui_state;
   aud_gui_volume=cargarConfig.aud_gui_volume;
+  juego_fov=cargarConfig.juego_fov;
+  juego_vsync=cargarConfig.juego_vsync;
 }
 void intro() {
   if (frame>10)            frame = (frame-12) % numFrames;
@@ -200,7 +201,7 @@ void intro() {
       textSize(24);
       text("PRESENTA", width/2, (height/2)+255);
     }
-  } else intro_state=false;
+  } else state++;
 }
 void menu() {
   switch (menu_index) {
@@ -222,9 +223,18 @@ void menu() {
     menu_index=0;
   }
 }
-//void keyPressed(){
-//  if(key==27)
+//void keyPressed() {
+//  if (key==27) {
 //    key=0;
+//    if (state==1) {    
+//      menu_back.trigger();
+//      menu_index=0;
+//    }
+//    if (state==2) {
+//      if (juego_ctrl==1)juego_menu=1;
+//      if (juego_ctrl==0)juego_ctrl=1;
+//    }
+//  }
 //}
 void menu_ini() { 
   frameRate(9);
@@ -318,7 +328,6 @@ void menu_jugar() {
         switch (menu_jugar_index) {
         case 0:
           state=2;
-          frameRate(scr_frameRate);
           break;
         case 1:
           break;
@@ -336,7 +345,6 @@ void menu_jugar() {
     switch (menu_jugar_index) {
     case 0:
       state=2;
-      frameRate(scr_frameRate);
       break;
     case 1:
       break;
@@ -362,102 +370,102 @@ void menu_opc() {
   fill(#ffffff);
   textAlign(LEFT);
   textSize((text_tam*80/40)%80);
-  text("OPCIONES", width/4, height/5);
+  text("OPCIONES", width/3-textWidth("OPCIONES")/2, height/5);
   textSize(text_tam);
-  int items=4;
+  int items=3;
   switch (menu_opc_index) {
   case 0:
     textSize(text_tam+10);
-    text(opc1, width/3, height*2/5+((height/5)*1/items));
+    text(opc1, width/3, height/5+((height/5)*1/items));
     textSize(text_tam);
-    text(opc2, width/3, height*2/5+((height/5)*2/items));
-    text(opc3, width/3, height*2/5+((height/5)*3/items));
-    text(opc4, width/3, height*2/5+((height/5)*4/items));
-    text(opc5, width/3, height*2/5+((height/5)*5/items));
-    text(opc6, width/3, height*2/5+((height/5)*6/items));
-    text(opc7, width/3, height*2/5+((height/5)*7/items));
-    text(opc8, width/4, height*2/5+((height/5)*8/items));
+    text(opc2, width/3, height/5+((height/5)*2/items));
+    text(opc3, width/3, height/5+((height/5)*3/items));
+    text(opc4, width/3, height/5+((height/5)*4/items));
+    text(opc5, width/3, height/5+((height/5)*5/items));
+    text(opc6, width/3, height/5+((height/5)*6/items));
+    text(opc7, width/3, height/5+((height/5)*7/items));
+    text(opc8, width/4, height/5+((height/5)*8/items));
     break;
   case 1:
-    text(opc1, width/3, height*2/5+((height/5)*1/items));
+    text(opc1, width/3, height/5+((height/5)*1/items));
     textSize(text_tam+10);
-    text(opc2, width/3, height*2/5+((height/5)*2/items));
+    text(opc2, width/3, height/5+((height/5)*2/items));
     textSize(text_tam);
-    text(opc3, width/3, height*2/5+((height/5)*3/items));
-    text(opc4, width/3, height*2/5+((height/5)*4/items));
-    text(opc5, width/3, height*2/5+((height/5)*5/items));
-    text(opc6, width/3, height*2/5+((height/5)*6/items));
-    text(opc7, width/3, height*2/5+((height/5)*7/items));
-    text(opc8, width/4, height*2/5+((height/5)*8/items));
+    text(opc3, width/3, height/5+((height/5)*3/items));
+    text(opc4, width/3, height/5+((height/5)*4/items));
+    text(opc5, width/3, height/5+((height/5)*5/items));
+    text(opc6, width/3, height/5+((height/5)*6/items));
+    text(opc7, width/3, height/5+((height/5)*7/items));
+    text(opc8, width/4, height/5+((height/5)*8/items));
     break;
   case 2:
-    text(opc1, width/3, height*2/5+((height/5)*1/items));
-    text(opc2, width/3, height*2/5+((height/5)*2/items));
+    text(opc1, width/3, height/5+((height/5)*1/items));
+    text(opc2, width/3, height/5+((height/5)*2/items));
     textSize(text_tam+10);
-    text(opc3, width/3, height*2/5+((height/5)*3/items));
+    text(opc3, width/3, height/5+((height/5)*3/items));
     textSize(text_tam);
-    text(opc4, width/3, height*2/5+((height/5)*4/items));
-    text(opc5, width/3, height*2/5+((height/5)*5/items));
-    text(opc6, width/3, height*2/5+((height/5)*6/items));
-    text(opc7, width/3, height*2/5+((height/5)*7/items));
-    text(opc8, width/4, height*2/5+((height/5)*8/items));
+    text(opc4, width/3, height/5+((height/5)*4/items));
+    text(opc5, width/3, height/5+((height/5)*5/items));
+    text(opc6, width/3, height/5+((height/5)*6/items));
+    text(opc7, width/3, height/5+((height/5)*7/items));
+    text(opc8, width/4, height/5+((height/5)*8/items));
     break;
   case 3:
-    text(opc1, width/3, height*2/5+((height/5)*1/items));
-    text(opc2, width/3, height*2/5+((height/5)*2/items));
-    text(opc3, width/3, height*2/5+((height/5)*3/items));
+    text(opc1, width/3, height/5+((height/5)*1/items));
+    text(opc2, width/3, height/5+((height/5)*2/items));
+    text(opc3, width/3, height/5+((height/5)*3/items));
     textSize(text_tam+10);
-    text(opc4, width/3, height*2/5+((height/5)*4/items));
+    text(opc4, width/3, height/5+((height/5)*4/items));
     textSize(text_tam);
-    text(opc5, width/3, height*2/5+((height/5)*5/items));
-    text(opc6, width/3, height*2/5+((height/5)*6/items));
-    text(opc7, width/3, height*2/5+((height/5)*7/items));
-    text("Volver", width/4, height*2/5+((height/5)*8/items));
+    text(opc5, width/3, height/5+((height/5)*5/items));
+    text(opc6, width/3, height/5+((height/5)*6/items));
+    text(opc7, width/3, height/5+((height/5)*7/items));
+    text("Volver", width/4, height/5+((height/5)*8/items));
     break;
   case 4:
-    text(opc1, width/3, height*2/5+((height/5)*1/items));
-    text(opc2, width/3, height*2/5+((height/5)*2/items));
-    text(opc3, width/3, height*2/5+((height/5)*3/items));
-    text(opc4, width/3, height*2/5+((height/5)*4/items));
+    text(opc1, width/3, height/5+((height/5)*1/items));
+    text(opc2, width/3, height/5+((height/5)*2/items));
+    text(opc3, width/3, height/5+((height/5)*3/items));
+    text(opc4, width/3, height/5+((height/5)*4/items));
     textSize(text_tam+10);
-    text(opc5, width/3, height*2/5+((height/5)*5/items));
+    text(opc5, width/3, height/5+((height/5)*5/items));
     textSize(text_tam);
-    text(opc6, width/3, height*2/5+((height/5)*6/items));
-    text(opc7, width/3, height*2/5+((height/5)*7/items));
-    text(opc8, width/4, height*2/5+((height/5)*8/items));
+    text(opc6, width/3, height/5+((height/5)*6/items));
+    text(opc7, width/3, height/5+((height/5)*7/items));
+    text(opc8, width/4, height/5+((height/5)*8/items));
     break;
   case 5:
-    text(opc1, width/3, height*2/5+((height/5)*1/items));
-    text(opc2, width/3, height*2/5+((height/5)*2/items));
-    text(opc3, width/3, height*2/5+((height/5)*3/items));
-    text(opc4, width/3, height*2/5+((height/5)*4/items));
-    text(opc5, width/3, height*2/5+((height/5)*5/items));
+    text(opc1, width/3, height/5+((height/5)*1/items));
+    text(opc2, width/3, height/5+((height/5)*2/items));
+    text(opc3, width/3, height/5+((height/5)*3/items));
+    text(opc4, width/3, height/5+((height/5)*4/items));
+    text(opc5, width/3, height/5+((height/5)*5/items));
     textSize(text_tam+10);
-    text(opc6, width/3, height*2/5+((height/5)*6/items));
+    text(opc6, width/3, height/5+((height/5)*6/items));
     textSize(text_tam);
-    text(opc7, width/3, height*2/5+((height/5)*7/items));
-    text(opc8, width/4, height*2/5+((height/5)*8/items));
+    text(opc7, width/3, height/5+((height/5)*7/items));
+    text(opc8, width/4, height/5+((height/5)*8/items));
     break;
   case 6:
-    text(opc1, width/3, height*2/5+((height/5)*1/items));
-    text(opc2, width/3, height*2/5+((height/5)*2/items));
-    text(opc3, width/3, height*2/5+((height/5)*3/items));
-    text(opc4, width/3, height*2/5+((height/5)*4/items));
-    text(opc5, width/3, height*2/5+((height/5)*5/items));
-    text(opc6, width/3, height*2/5+((height/5)*6/items));
-    text(opc7, width/3, height*2/5+((height/5)*7/items));
-    text(opc8, width/4, height*2/5+((height/5)*8/items));
+    text(opc1, width/3, height/5+((height/5)*1/items));
+    text(opc2, width/3, height/5+((height/5)*2/items));
+    text(opc3, width/3, height/5+((height/5)*3/items));
+    text(opc4, width/3, height/5+((height/5)*4/items));
+    text(opc5, width/3, height/5+((height/5)*5/items));
+    text(opc6, width/3, height/5+((height/5)*6/items));
+    text(opc7, width/3, height/5+((height/5)*7/items));
+    text(opc8, width/4, height/5+((height/5)*8/items));
     break;
   case 7:
-    text(opc1, width/3, height*2/5+((height/5)*1/items));
-    text(opc2, width/3, height*2/5+((height/5)*2/items));
-    text(opc3, width/3, height*2/5+((height/5)*3/items));
-    text(opc4, width/3, height*2/5+((height/5)*4/items));
-    text(opc5, width/3, height*2/5+((height/5)*5/items));
-    text(opc6, width/3, height*2/5+((height/5)*6/items));
-    text(opc7, width/3, height*2/5+((height/5)*7/items));
+    text(opc1, width/3, height/5+((height/5)*1/items));
+    text(opc2, width/3, height/5+((height/5)*2/items));
+    text(opc3, width/3, height/5+((height/5)*3/items));
+    text(opc4, width/3, height/5+((height/5)*4/items));
+    text(opc5, width/3, height/5+((height/5)*5/items));
+    text(opc6, width/3, height/5+((height/5)*6/items));
+    text(opc7, width/3, height/5+((height/5)*7/items));
     textSize(text_tam+10);
-    text(opc8, width/4, height*2/5+((height/5)*8/items));
+    text(opc8, width/4, height/5+((height/5)*8/items));
     textSize(text_tam);
     break;
   }
@@ -477,7 +485,11 @@ void menu_opc() {
   } else {
     opc2_value="No";
   }
-  opc3_value=""+scr_frameRate;
+  if (juego_vsync==1) { 
+    opc3_value="Si";
+  } else {
+    opc3_value="No";
+  }
   if (intro_state) {
     opc4_value="Si";
   } else {
@@ -497,7 +509,7 @@ void menu_opc() {
   opc8_value="";
   opc1="Resolución   "+opc1_value;
   opc2="Pantalla Completa   "+opc2_value;
-  opc3="Tasa de FPS   "+opc3_value;
+  opc3="Sincronización vertical   "+opc3_value;
   opc4="Mostrar introducción   "+opc4_value;
   opc5="Música   "+opc5_value;
   opc6="Efectos de sonido   "+opc6_value;
@@ -523,7 +535,14 @@ void menu_opc() {
       cargarConfig.guardarConf(2, str(scr_fullscr));
       break;
     case 2:
-      cargarConfig.guardarConf(3, str(scr_frameRate));
+      if (juego_vsync==1) {
+        juego_vsync=0;
+        opc3_value="No";
+      } else {
+        juego_vsync=1;
+        opc3_value="Si";
+      }
+      cargarConfig.guardarConf(10, str(juego_vsync));
       break;
     case 3:
       if (intro_state) {
@@ -577,7 +596,7 @@ void menu_opc() {
     }
   }
   for (int i=1; i<7; i++) {
-    if ((mouseX > (width/3) )&&( mouseX < (width/3+400*redim) )&&( mouseY > ((height*2/5+((height/5)*i/items))-40))&&( mouseY < ((height*2/5+((height/5)*i/items))))) {
+    if ((mouseX > (width/3) )&&( mouseX < (width/3+400*redim) )&&( mouseY > ((height/5+((height/5)*i/items))-40))&&( mouseY < ((height/5+((height/5)*i/items))))) {
       if (menu_opc_index!=i-1)menu_nav.trigger();
       menu_opc_index=(i-1)%6;
       if (mousePressed) {
@@ -601,7 +620,14 @@ void menu_opc() {
           cargarConfig.guardarConf(2, str(scr_fullscr));
           break;
         case 2:
-          cargarConfig.guardarConf(3, str(scr_frameRate));
+          if (juego_vsync==1) {
+            juego_vsync=0;
+            opc3_value="No";
+          } else {
+            juego_vsync=1;
+            opc3_value="Si";
+          }
+          cargarConfig.guardarConf(10, str(juego_vsync));
           break;
         case 3:
           if (intro_state) {
@@ -651,7 +677,7 @@ void menu_opc() {
       }
     }
   }
-  if ((mouseX > (width/4) )&&( mouseX < (width/4+120) )&&( mouseY > ((height*2/5+((height/5)*8/items))-40))&&( mouseY < ((height*2/5+((height/5)*8/items))))) {
+  if ((mouseX > (width/4) )&&( mouseX < (width/4+120) )&&( mouseY > ((height/5+((height/5)*8/items))-40))&&( mouseY < ((height/5+((height/5)*8/items))))) {
     if (menu_opc_index!=7)menu_nav.trigger();
     menu_opc_index=7;
     if (mousePressed) {     
@@ -685,5 +711,56 @@ void menu_opc() {
     menu_nav.trigger();
     if (menu_opc_index==0)resPos=(resPos+1)%resCount;
   }
+}
+void juego_menu() {
+  juego();
+  camera();
+  gui.beginDraw();
+  gui.background(#000000, 126);
+  gui.textSize(100);
+  gui.textAlign(CENTER);
+  gui.text("OPCIONES", width/2, height/2, 0);
+  gui.endDraw();
+  image(gui, 0, 0);
+  switch(juego_menu) {
+  case 0:
+
+    break;
+  case 1:
+    juego_ctrl=0;
+    juego_menu=0;
+    break;
+  }
+  if (keyPressed&&keyCode==LEFT)exit();
+}
+void juego_control() {
+  switch(juego_ctrl) {
+  case 0:
+    if (juego_vsync==1)frameRate(-1);
+    else frameRate(scr_frameRate);
+    gl.setSwapInterval(juego_vsync);     
+    juego();
+    break;
+  case 1:
+    juego_menu();
+
+    break;
+  }
+}
+void juego() {
+  image(bg, 0, 0, width, height);
+  beginCamera();
+  camera(width/2, height/2, (height/2.0) / tan(PI*30.0 / 180.0)*juego_fov/100, width/2, height/2, 0, 0, 1, 0);
+  noStroke();
+  lights();
+  pushMatrix();
+  translate((width-mouseX), height+50, 0);
+  scale(3);
+  model.draw();
+  popMatrix();   
+  endCamera();
+  camera();
+  noLights();
+  interfaz.draw();
 }
 

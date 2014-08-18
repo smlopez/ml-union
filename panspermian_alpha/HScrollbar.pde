@@ -77,3 +77,4 @@ class HScrollbar {
     return int(spos%sposMin)*100/280;
   }
 }
+

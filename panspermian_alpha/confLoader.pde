@@ -9,6 +9,8 @@ class confLoader {
   float aud_music_volume=0, aud_gui_volume=0; //-CONFIG- Valor del volumen
   int resCount=0;
   int [][] res;
+  int juego_fov=0;
+  int juego_vsync=0;
   XML xml;
   void confLoader() {
   }
@@ -25,6 +27,8 @@ class confLoader {
     aud_music_volume=configs[6].getFloat("value");
     aud_gui_state=boolean(configs[7].getString("value"));
     aud_gui_volume=configs[8].getFloat("value");
+    juego_fov=configs[9].getInt("value");
+    juego_vsync=configs[10].getInt("value");
     //  println(configs[0].getInt("value"));
     //  println(configs[1].getInt("value"));
     //  println(boolean(configs[2].getContent("value")));
@@ -47,4 +51,8 @@ class confLoader {
       res[i][1]= configs[i].getInt("y");
     }
   }
+  void dataSec(String action, String fichero, String ext) { // dataSec("enc/dec","dirFichero","Extensión"); EJEMPLO
+    open("java -jar data/data.jar -from="+fichero+"."+ext+" -to="+fichero+".dat -pass=3JkQI+xkHWBHsA== -"+action);
+  }
 }
+
