@@ -223,19 +223,19 @@ void menu() {
     menu_index=0;
   }
 }
-//void keyPressed() {
-//  if (key==27) {
-//    key=0;
-//    if (state==1) {    
-//      menu_back.trigger();
-//      menu_index=0;
-//    }
-//    if (state==2) {
-//      if (juego_ctrl==1)juego_menu=1;
-//      if (juego_ctrl==0)juego_ctrl=1;
-//    }
-//  }
-//}
+void keyPressed() {
+  if (key==27) {
+    key=0;
+    if (state==1) {    
+      menu_back.trigger();
+      menu_index=0;
+    }
+    if (state==2) {
+      if (juego_ctrl==1)juego_menu=1;
+      if (juego_ctrl==0)juego_ctrl=1;
+    }
+  }
+}
 void menu_ini() { 
   frameRate(9);
   image(logo_menu, (width-(800/redim))/2, height/5, logo_menu.width/redim, logo_menu.height/redim);

@@ -51,8 +51,5 @@ class confLoader {
       res[i][1]= configs[i].getInt("y");
     }
   }
-  void dataSec(String action, String fichero, String ext) { // dataSec("enc/dec","dirFichero","Extensión"); EJEMPLO
-    open("java -jar data/data.jar -from="+fichero+"."+ext+" -to="+fichero+".dat -pass=3JkQI+xkHWBHsA== -"+action);
-  }
 }
 
